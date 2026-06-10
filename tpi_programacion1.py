@@ -12,6 +12,13 @@ def print_menu():
     print("7. Salir del programa")
 
 
+def convertir_entero(valor):
+    try:
+        return int(valor)
+    except ValueError:
+        return 0
+
+
 def get_countries_csv():
     columnas_requeridas = {
         "nombre",
@@ -88,20 +95,31 @@ def get_countries_csv():
                     continue
 
                 paises = []
+                for index, fila in enumerate(lector):
+                    nombre_fila = (
+                        fila["nombre"]
+                        if fila["nombre"]
+                        else f"Sin asignar {index_error }"
+                    )
 
-                for fila in lector:
-                    try:
-                        paises.append(
-                            {
-                                "nombre": fila["nombre"],
-                                "continente": fila["continente"],
-                                "poblacion": int(fila["poblacion"]),
-                                "superficie": int(fila["superficie"]),
-                            }
-                        )
+                    continente = (
+                        fila["continente"].strip()
+                        if fila["continente"].strip()
+                        else "Sin asignar"
+                    )
 
-                    except ValueError:
-                        print("Se ignoró una fila con datos numéricos inválidos.")
+                    poblacion = convertir_entero(fila["poblacion"])
+
+                    superficie = convertir_entero(fila["superficie"])
+
+                    paises.append(
+                        {
+                            "nombre": nombre,
+                            "continente": continente,
+                            "poblacion": poblacion,
+                            "superficie": superficie,
+                        }
+                    )
 
                 return {
                     "paises": paises,
