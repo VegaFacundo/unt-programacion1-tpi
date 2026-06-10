@@ -12,6 +12,35 @@ def print_menu():
     print("7. Salir del programa")
 
 
+def obtener_simple_string(label, error_label):
+    while True:
+        pais = input(label).strip().capitalize()
+        if pais.isalpha():
+            return pais
+        print(error_label)
+
+
+def es_pais_asignado(paises=None, nombre_pais=""):
+    if paises is None:
+        paises = []
+    for pais in paises:
+        if pais["nombre"] == nombre_pais:
+            return True
+    return False
+
+
+def obtener_integer(label, error_label):
+    while True:
+        try:
+            entero = int(input(label).strip())
+            if entero >= 0:
+                return entero
+
+            print(error_label)
+        except Exception as e:
+            print("Ocurrio un error al obtener el numero: ", e)
+
+
 def convertir_entero(valor):
     try:
         return int(valor)
@@ -51,7 +80,7 @@ def get_countries_csv():
                 escritor = csv.writer(archivo)
                 escritor.writerow(["nombre", "continente", "poblacion", "superficie"])
 
-            return {"paises": [], "archivo": archivo, "nombre_archivo": nombre_archivo}
+            return {"paises": [], "nombre_archivo": nombre_archivo}
 
         try:
             with open(nombre_archivo, "r", encoding="utf-8") as archivo:
@@ -79,7 +108,6 @@ def get_countries_csv():
 
                     return {
                         "paises": [],
-                        "archivo": archivo,
                         "nombre_archivo": nombre_archivo,
                     }
 
@@ -114,7 +142,7 @@ def get_countries_csv():
 
                     paises.append(
                         {
-                            "nombre": nombre,
+                            "nombre": nombre_fila,
                             "continente": continente,
                             "poblacion": poblacion,
                             "superficie": superficie,
@@ -123,7 +151,6 @@ def get_countries_csv():
 
                 return {
                     "paises": paises,
-                    "archivo": archivo,
                     "nombre_archivo": nombre_archivo,
                 }
 
@@ -134,12 +161,63 @@ def get_countries_csv():
             print(f"Error al leer el archivo: {error}")
 
 
+def agregar_pais(paises, nombre_archivo):
+    with open(nombre_archivo, "a", newline="", encoding="utf-8") as archivo:
+
+        while True:
+            pais = obtener_simple_string(
+                label="Ingrese el nombre del pais: ",
+                error_label="Ingrese un pais valido",
+            )
+            if not es_pais_asignado(paises=paises, nombre_pais=pais):
+                break
+            print("Pais ya se encuentra asignado, ingrese otro.")
+        continente = obtener_simple_string(
+            label="Ingrese el continente: ", error_label="Ingrese un continente valido"
+        )
+
+        superficie = obtener_integer(
+            label="Ingrese la superficie: ",
+            error_label="Ingrese un superficie valida, igual o mayor que 0",
+        )
+        poblacion = obtener_integer(
+            label="Ingrese la pobracion: ",
+            error_label="Ingrese un pobracion valida, igual o mayor que 0",
+        )
+
+        escritor = csv.DictWriter(
+            archivo, fieldnames=["nombre", "continente", "poblacion", "superficie"]
+        )
+        escritor.writerow(
+            {
+                "nombre": pais,
+                "continente": continente,
+                "poblacion": poblacion,
+                "superficie": superficie,
+            }
+        )
+        paises.append(
+            {
+                "nombre": pais,
+                "continente": continente,
+                "poblacion": poblacion,
+                "superficie": superficie,
+            }
+        )
+
+
 def init():
     is_active = True
     print("Bienvenido al sistema de gestion de paises.")
-    countries_csv = get_countries_csv()
+    data = get_countries_csv()
+    paises = data["paises"]
+    nombre_archivo = data["nombre_archivo"]
     while is_active:
         print_menu()
+        opcion = input("Opcion: ").strip()
+        if opcion == "1":
+            agregar_pais(paises, nombre_archivo)
+
         exit()
 
 
