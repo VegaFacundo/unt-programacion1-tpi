@@ -12,10 +12,16 @@ def print_menu():
     print("7. Salir del programa")
 
 
-def obtener_simple_string(label, error_label):
+def obtener_simple_string(
+    label, error_label, convert="capitalize", permitir_vacio=False
+):
     while True:
-        pais = input(label).strip().capitalize()
-        if pais.isalpha():
+        pais = input(label).strip()
+        if convert == "capitalize":
+            pais = pais.capitalize()
+        if convert == "lower":
+            pais = pais.lower()
+        if pais.isalpha() or permitir_vacio:
             return pais
         print(error_label)
 
@@ -181,8 +187,8 @@ def agregar_pais(paises, nombre_archivo):
             error_label="Ingrese un superficie valida, igual o mayor que 0",
         )
         poblacion = obtener_integer(
-            label="Ingrese la pobracion: ",
-            error_label="Ingrese un pobracion valida, igual o mayor que 0",
+            label="Ingrese la poblacion: ",
+            error_label="Ingrese un poblacion valida, igual o mayor que 0",
         )
 
         escritor = csv.DictWriter(
@@ -206,6 +212,92 @@ def agregar_pais(paises, nombre_archivo):
         )
 
 
+def guardar_nuevo_paises(paises, nombre_archivo):
+    with open(nombre_archivo, "w", newline="", encoding="utf-8") as archivo:
+        escritor = csv.DictWriter(
+            archivo, fieldnames=["nombre", "continente", "poblacion", "superficie"]
+        )
+
+        escritor.writeheader()
+        escritor.writerows(paises)
+
+
+def modificar_pais(paises, nombre_archivo):
+    es_pais = False
+    while not es_pais:
+        pais_nombre = obtener_simple_string(
+            label="Ingrese el nombre del pais: ",
+            error_label="Ingrese un pais valido",
+        )
+        resultado = next(
+            (pais for pais in paises if pais_nombre.lower() in pais["nombre"].lower()),
+            None,
+        )
+
+        if not resultado:
+            print("No se encontro un pais con el nombre: ", obtener_simple_string)
+            opcion = obtener_simple_string(
+                label="intentar de nuevo? Y/n: ",
+                error_label="Ingrese una opcion valida",
+                convert="lower",
+            )
+            if opcion == "n":
+                break
+            continue
+
+        print(resultado)
+
+        pais_index = paises.index(
+            resultado,
+        )
+
+        opcion_pais = obtener_simple_string(
+            label=f"Usar el pais: {resultado["nombre"]}? Y/n ",
+            error_label="Opcion invalida",
+            convert="lower",
+            permitir_vacio=True,
+        )
+        if opcion_pais == "n":
+            continue
+        es_pais = True
+
+    es_editando = True
+    while es_editando:
+        opcion_editar = obtener_simple_string(
+            label="editar poblacion(p) o superficie(x) o salir(s): ",
+            error_label="Opcion invalida",
+            convert="lower",
+        )
+        if opcion_editar == "p":
+
+            poblacion = obtener_integer(
+                label="Ingrese la poblacion: ",
+                error_label="Ingrese un poblacion valida, igual o mayor que 0",
+            )
+            paises[pais_index]["poblacion"] = poblacion
+            guardar_nuevo_paises(paises, nombre_archivo)
+            continue
+        elif opcion_editar == "x":
+            superficie = obtener_integer(
+                label="Ingrese la superficie: ",
+                error_label="Ingrese un superficie valida, igual o mayor que 0",
+            )
+            paises[pais_index]["superficie"] = superficie
+            guardar_nuevo_paises(paises, nombre_archivo)
+            continue
+        elif opcion_editar == "s":
+            print("Volviendo al menu...")
+            es_editando = False
+            continue
+        else:
+            print("Opcion invalida")
+
+
+def mostrar_paises(paises):
+    for pais in paises:
+        print(pais)
+
+
 def init():
     is_active = True
     print("Bienvenido al sistema de gestion de paises.")
@@ -218,7 +310,15 @@ def init():
         if opcion == "1":
             agregar_pais(paises, nombre_archivo)
 
-        exit()
+        if opcion == "2":
+            modificar_pais(paises, nombre_archivo)
+        if opcion == "7":
+            is_active = False
+            print("saliendo del programa. Adios!")
+        if opcion == "x":
+            mostrar_paises(
+                paises,
+            )
 
 
 init()
