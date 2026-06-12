@@ -2,6 +2,10 @@ import csv
 import os
 
 
+def print_separador():
+    print("-" * 40)
+
+
 def print_menu():
     print("1. Agregar nuevo Pais")
     print("2. Actualizar Poblacion/Superficie de pais")
@@ -222,6 +226,33 @@ def guardar_nuevo_paises(paises, nombre_archivo):
         escritor.writerows(paises)
 
 
+def buscar_pais(paises):
+    while True:
+        pais_nombre = obtener_simple_string(
+            label="Ingrese el nombre del pais: ",
+            error_label="Ingrese un pais valido",
+        )
+
+        resultado = next(
+            (pais for pais in paises if pais_nombre.lower() in pais["nombre"].lower()),
+            None,
+        )
+
+        if not resultado:
+            print("No se encontro un pais con el nombre: ", obtener_simple_string)
+            opcion = obtener_simple_string(
+                label="intentar de nuevo? Y/n: ",
+                error_label="Ingrese una opcion valida",
+                convert="lower",
+            )
+            if opcion == "n":
+                break
+            continue
+
+        print(resultado)
+        break
+
+
 def modificar_pais(paises, nombre_archivo):
     es_pais = False
     while not es_pais:
@@ -298,6 +329,154 @@ def mostrar_paises(paises):
         print(pais)
 
 
+def filtrar_paises(paises, nombre_archivo):
+    filtrar_opcion = obtener_simple_string(
+        label="Filtrar países por Continente(c), Población(p), Superficie(s): ",
+        error_label="Opción incorrecta",
+        convert="lower",
+    )
+
+    paises_filtrados = []
+
+    if filtrar_opcion == "c":
+        continentes = {pais["continente"] for pais in paises}
+        print("Continentes disponibles:")
+        for continente in continentes:
+            print("-", continente)
+        continente = obtener_simple_string(
+            label="Ingrese el continente: ",
+            error_label="Continente inválido",
+        )
+
+        paises_filtrados = [
+            pais for pais in paises if continente.lower() in pais["continente"].lower()
+        ]
+
+    elif filtrar_opcion == "p":
+        minimo = obtener_integer(
+            label="Población mínima: ",
+            error_label="Valor inválido",
+        )
+
+        maximo = obtener_integer(
+            label="Población máxima: ",
+            error_label="Valor inválido",
+        )
+
+        paises_filtrados = [
+            pais for pais in paises if minimo <= pais["poblacion"] <= maximo
+        ]
+
+    elif filtrar_opcion == "s":
+        minimo = obtener_integer(
+            label="Superficie mínima: ",
+            error_label="Valor inválido",
+        )
+
+        maximo = obtener_integer(
+            label="Superficie máxima: ",
+            error_label="Valor inválido",
+        )
+
+        paises_filtrados = [
+            pais for pais in paises if minimo <= pais["superficie"] <= maximo
+        ]
+
+    else:
+        print("Opción inválida.")
+        return
+
+    if len(paises_filtrados) == 0:
+        print("No se encontraron países.")
+    else:
+        for pais in paises_filtrados:
+            print(pais)
+
+
+def ordenar_paises(paises, nombre_archivo):
+    ordenar_opcion = obtener_simple_string(
+        label="Ordenar países por Nombre(n), Población(p), Superficie(s): ",
+        error_label="Opción incorrecta",
+        convert="lower",
+    )
+
+    if ordenar_opcion == "n":
+        paises.sort(key=lambda pais: pais["nombre"].lower())
+
+    elif ordenar_opcion == "p":
+        paises.sort(key=lambda pais: pais["poblacion"])
+
+    elif ordenar_opcion == "s":
+        paises.sort(key=lambda pais: pais["superficie"])
+
+    else:
+        print("Opción inválida.")
+        return
+
+    guardar_nuevo_paises(paises, nombre_archivo)
+    print("Países ordenados y archivo actualizado.")
+
+
+def mostrar_stadisticas(paises):
+    print("Calculando estadisticas...")
+    if len(paises) < 1:
+        print("Paises insuficiente para calcular estadisticas")
+
+    pais_mayor_poblacion = paises[0]
+    pais_menor_poblacion = paises[0]
+    prom_poblacion = 0
+    poblacion_cantidad = 0
+    prom_superficie = 0
+    superficie_cantidad = 0
+    paises_por_continente = {}
+
+    for pais in paises:
+        if pais["poblacion"] > pais_mayor_poblacion["poblacion"]:
+            pais_mayor_poblacion = pais
+
+        if pais["poblacion"] < pais_menor_poblacion["poblacion"]:
+            pais_menor_poblacion = pais
+
+        if pais["poblacion"] > 0:
+            poblacion_cantidad = poblacion_cantidad + 1
+            prom_poblacion = prom_poblacion + pais["poblacion"]
+
+        if pais["superficie"] > 0:
+            superficie_cantidad = superficie_cantidad + 1
+            prom_superficie = prom_poblacion + pais["superficie"]
+
+        paises_por_continente[pais["continente"]] = (
+            paises_por_continente.get(pais["continente"], 0) + 1
+        )
+
+    if poblacion_cantidad > 0:
+        prom_poblacion /= poblacion_cantidad
+
+    if superficie_cantidad > 0:
+        prom_superficie /= superficie_cantidad
+
+    print("Pais con Mayor poblacion: ")
+    print(pais_mayor_poblacion)
+    print("---")
+
+    print("Pais con Menor poblacion: ")
+    print(pais_menor_poblacion)
+    print("---")
+
+    print("Promedio de poblacion: ")
+    print(prom_poblacion)
+    print("---")
+
+    print("Promedio de supervicion: ")
+    print(prom_superficie)
+    print("---")
+
+    print("Paises por continente: ")
+    for continente, cantidad in paises_por_continente.items():
+        print(f"{continente}: {cantidad}")
+    print("---")
+
+
 def init():
     is_active = True
     print("Bienvenido al sistema de gestion de paises.")
@@ -306,19 +485,37 @@ def init():
     nombre_archivo = data["nombre_archivo"]
     while is_active:
         print_menu()
+        print_separador()
         opcion = input("Opcion: ").strip()
         if opcion == "1":
             agregar_pais(paises, nombre_archivo)
-
-        if opcion == "2":
+        elif opcion == "2":
             modificar_pais(paises, nombre_archivo)
-        if opcion == "7":
+        elif opcion == "3":
+            buscar_pais(paises)
+        elif opcion == "4":
+            filtrar_paises(paises, nombre_archivo)
+        elif opcion == "5":
+            ordenar_paises(paises, nombre_archivo)
+        elif opcion == "6":
+            mostrar_stadisticas(paises)
+        elif opcion == "7":
             is_active = False
             print("saliendo del programa. Adios!")
-        if opcion == "x":
+        elif opcion == "x":
             mostrar_paises(
                 paises,
             )
+        else:
+            print("Opcion invalida")
+        print_separador()
 
 
-init()
+if __name__ == "__main__":
+    try:
+        init()
+    except KeyboardInterrupt:
+        print("\nPrograma cancelado por el usuario. Adios!")
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+        print("Adios!")
