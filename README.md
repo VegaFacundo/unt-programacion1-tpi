@@ -67,3 +67,9 @@ integrantes:
   - Luca Joel Ferreira - Contribuciones: Manejo de validaciones de
     entrada, diseño estético de interfaz de consola
     y documentación.
+    
+LINK DEL VIDEO DEMOSTRATIVO:
+
+https://www.youtube.com/watch?v=ckYs6QNPGDI
+
+
