@@ -66,6 +66,8 @@ def obtener_integer(label, error_label):
                 return entero
 
             print(f"[Error] {error_label}")
+        except ValueError:
+            print(f"[Error] Ingrese un numero valido por favor.")
         except Exception as e:
             print(f"[Error] Ocurrió un error al obtener el número: {e}")
 
@@ -349,14 +351,6 @@ def modificar_pais(paises, nombre_archivo):
         else:
             print("[Error] Opción inválida")
 
-
-# Función simple que imprime todos los países en la lista
-def mostrar_paises(paises):
-    print("\n=== LISTADO DE TODOS LOS PAÍSES ===")
-    for pais in paises:
-        imprimir_pais_bonito(pais)
-
-
 # Función que filtra países según criterios
 def filtrar_paises(paises, nombre_archivo):
     print("\n=== FILTRAR PAÍSES ===")
@@ -545,8 +539,6 @@ def init():
         elif opcion == "7":
             is_active = False
             print("\n¡Saliendo del programa. Que tengas un buen día!\n")
-        elif opcion == "x":
-            mostrar_paises(paises)
         else:
             print("[Error] Opción inválida, por favor intente de nuevo.")
 
