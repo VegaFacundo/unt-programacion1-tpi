@@ -3,40 +3,51 @@ import csv  # Para leer y escribir archivos CSV
 import os   # Para verificar la existencia de archivos
 
 
+# Función puramente estética para imprimir un país formateado
+def imprimir_pais_bonito(pais):
+    print(f"  ┌{'─'*30}┐")
+    print(f"  │ País:       {pais['nombre']}")
+    print(f"  │ Continente: {pais['continente']}")
+    print(f"  │ Población:  {pais['poblacion']:,}")
+    print(f"  │ Superficie: {pais['superficie']:,} km²")
+    print(f"  └{'─'*30}┘")
+
+
 # Función que imprime una línea separadora para mejorar la legibilidad del menú
 def print_separador():
-    print("-" * 40)
+    print(f"┠{'─' * 45}┨")
 
 
 # Función que muestra el menú principal de opciones disponibles
 def print_menu():
-    print("1. Agregar nuevo Pais")
-    print("2. Actualizar Poblacion/Superficie de pais")
-    print("3. Buscar pais")
-    print("4. Filtrar paises")
-    print("5. Ordenar paisese")
-    print("6. Mostrar estadisticas")
-    print("7. Salir del programa")
+    print(f"\n┏{'━' * 45}┓")
+    print(f"┃{'SISTEMA DE GESTIÓN DE PAÍSES'.center(45)}┃")
+    print(f"┣{'━' * 45}┫")
+    print(f"┃{'  [1]  Agregar nuevo País'.ljust(45)}┃")
+    print(f"┃{'  [2]  Actualizar Población/Superficie'.ljust(45)}┃")
+    print(f"┃{'  [3]  Buscar país'.ljust(45)}┃")
+    print(f"┃{'  [4]  Filtrar países'.ljust(45)}┃")
+    print(f"┃{'  [5]  Ordenar países'.ljust(45)}┃")
+    print(f"┃{'  [6]  Mostrar estadísticas'.ljust(45)}┃")
+    print(f"┃{'  [7]  Salir del programa'.ljust(45)}┃")
 
 
 # Función que obtiene una cadena de texto del usuario con validación
-# Parámetros: label, error_label, convert (capitalize/lower), permitir_vacio
 def obtener_simple_string(
     label, error_label, convert="capitalize", permitir_vacio=False
 ):
     while True:
-        pais = input(label).strip()
+        pais = input(f"> {label}").strip()
         if convert == "capitalize":
             pais = pais.capitalize()
         if convert == "lower":
             pais = pais.lower()
         if pais.replace(" ", "").isalpha() or permitir_vacio:
             return pais
-        print(error_label)
+        print(f"[Error] {error_label}")
 
 
 # Función que verifica si un país ya existe en la lista
-# Retorna True si existe, False en caso contrario
 def es_pais_asignado(paises=None, nombre_pais=""):
     if paises is None:
         paises = []
@@ -47,17 +58,16 @@ def es_pais_asignado(paises=None, nombre_pais=""):
 
 
 # Función que obtiene un número entero del usuario con validación
-# Solo acepta números no negativos (>= 0)
 def obtener_integer(label, error_label):
     while True:
         try:
-            entero = int(input(label).strip())
+            entero = int(input(f"> {label}").strip())
             if entero >= 0:
                 return entero
 
-            print(error_label)
+            print(f"[Error] {error_label}")
         except Exception as e:
-            print("Ocurrio un error al obtener el numero: ", e)
+            print(f"[Error] Ocurrió un error al obtener el número: {e}")
 
 
 # Función auxiliar que convierte una cadena a entero, retorna 0 si falla
@@ -69,36 +79,35 @@ def convertir_entero(valor):
 
 
 # Función que carga los países desde un archivo CSV
-# Si el archivo no existe, lo crea con las columnas requeridas
 def get_countries_csv():
-    # Definir las columnas que debe tener el archivo CSV
     columnas_requeridas = {
         "nombre",
         "continente",
         "poblacion",
         "superficie",
     }
+    
+    print(f"\n╭{'─'*40}╮")
+    print(f"│{'CONFIGURACIÓN DE ARCHIVO INICIAL'.center(40)}│")
+    print(f"╰{'─'*40}╯")
 
     while True:
-
         usar_defecto = (
-            input("¿Usar archivo por defecto 'paises.csv'? (S/n): ").strip().lower()
+            input("> ¿Usar archivo por defecto 'paises.csv'? (S/n): ").strip().lower()
         )
 
         if usar_defecto != "n":
             nombre_archivo = "paises.csv"
         else:
-
             while True:
-                nombre_archivo = input("Ingrese el nombre del archivo CSV: ").strip()
+                nombre_archivo = input("> Ingrese el nombre del archivo CSV: ").strip()
 
                 if nombre_archivo.endswith(".csv") and len(nombre_archivo) > 4:
                     break
-
-                print("Debe ingresar un nombre válido terminado en .csv")
+                print("[Error] Debe ingresar un nombre válido terminado en .csv")
 
         if not os.path.exists(nombre_archivo):
-
+            print(f"[Info] Creando nuevo archivo: {nombre_archivo}...")
             with open(nombre_archivo, "w", newline="", encoding="utf-8") as archivo:
                 escritor = csv.writer(archivo)
                 escritor.writerow(["nombre", "continente", "poblacion", "superficie"])
@@ -107,14 +116,12 @@ def get_countries_csv():
 
         try:
             with open(nombre_archivo, "r", encoding="utf-8") as archivo:
-
                 lector = csv.DictReader(archivo)
 
                 if lector.fieldnames is None:
-
                     opcion = (
                         input(
-                            "El archivo está vacío. ¿Desea utilizarlo igualmente? (S/n): "
+                            "[Advertencia] El archivo está vacío. ¿Desea utilizarlo igualmente? (S/n): "
                         )
                         .strip()
                         .lower()
@@ -138,10 +145,7 @@ def get_countries_csv():
                 faltantes = columnas_requeridas - columnas_actuales
 
                 if faltantes:
-                    print(
-                        "El archivo no posee las columnas:",
-                        ", ".join(faltantes),
-                    )
+                    print(f"[Error] El archivo no posee las columnas: {', '.join(faltantes)}")
                     print("Seleccione otro archivo.")
                     continue
 
@@ -160,7 +164,6 @@ def get_countries_csv():
                     )
 
                     poblacion = convertir_entero(fila["poblacion"])
-
                     superficie = convertir_entero(fila["superficie"])
 
                     paises.append(
@@ -171,44 +174,42 @@ def get_countries_csv():
                             "superficie": superficie,
                         }
                     )
-
+                print(f"[Éxito] Archivo cargado exitosamente ({len(paises)} países).")
                 return {
                     "paises": paises,
                     "nombre_archivo": nombre_archivo,
                 }
 
         except PermissionError:
-            print("No se tienen permisos para acceder al archivo.")
+            print("[Error] No se tienen permisos para acceder al archivo.")
 
         except Exception as error:
-            print(f"Error al leer el archivo: {error}")
+            print(f"[Error] Error al leer el archivo: {error}")
 
 
 # Función que agrega un nuevo país al archivo CSV
-# Solicita datos del usuario (nombre, continente, población, superficie)
 def agregar_pais(paises, nombre_archivo):
-    # Abre el archivo en modo append para agregar un nuevo país
+    print("\n=== AGREGAR NUEVO PAÍS ===")
     with open(nombre_archivo, "a", newline="", encoding="utf-8") as archivo:
-
         while True:
             pais = obtener_simple_string(
-                label="Ingrese el nombre del pais: ",
-                error_label="Ingrese un pais valido",
+                label="Ingrese el nombre del país: ",
+                error_label="Ingrese un país válido",
             )
             if not es_pais_asignado(paises=paises, nombre_pais=pais):
                 break
-            print("Pais ya se encuentra asignado, ingrese otro.")
+            print("[Advertencia] El país ya se encuentra asignado, ingrese otro.")
+            
         continente = obtener_simple_string(
-            label="Ingrese el continente: ", error_label="Ingrese un continente valido"
+            label="Ingrese el continente: ", error_label="Ingrese un continente válido"
         )
-
         superficie = obtener_integer(
-            label="Ingrese la superficie: ",
-            error_label="Ingrese un superficie valida, igual o mayor que 0",
+            label="Ingrese la superficie (km²): ",
+            error_label="Ingrese una superficie válida, igual o mayor que 0",
         )
         poblacion = obtener_integer(
-            label="Ingrese la poblacion: ",
-            error_label="Ingrese un poblacion valida, igual o mayor que 0",
+            label="Ingrese la población: ",
+            error_label="Ingrese una población válida, igual o mayor que 0",
         )
 
         escritor = csv.DictWriter(
@@ -230,28 +231,26 @@ def agregar_pais(paises, nombre_archivo):
                 "superficie": superficie,
             }
         )
+        print(f"\n[Éxito] ¡País '{pais}' agregado correctamente!")
 
 
 # Función que guarda todos los países en el archivo CSV
-# Reescribe el archivo completo con los datos actualizados
 def guardar_nuevo_paises(paises, nombre_archivo):
     with open(nombre_archivo, "w", newline="", encoding="utf-8") as archivo:
         escritor = csv.DictWriter(
             archivo, fieldnames=["nombre", "continente", "poblacion", "superficie"]
         )
-
-        # Escribir encabezados y luego todas las filas de países
         escritor.writeheader()
         escritor.writerows(paises)
 
 
 # Función que busca un país por nombre en la lista
-# Permite reintentar la búsqueda si el país no se encuentra
 def buscar_pais(paises):
+    print("\n=== BUSCAR PAÍS ===")
     while True:
         pais_nombre = obtener_simple_string(
-            label="Ingrese el nombre del pais: ",
-            error_label="Ingrese un pais valido",
+            label="Ingrese el nombre del país a buscar: ",
+            error_label="Ingrese un país válido",
         )
 
         resultado = next(
@@ -260,29 +259,29 @@ def buscar_pais(paises):
         )
 
         if not resultado:
-            print("No se encontro un pais con el nombre: ", pais_nombre)
+            print(f"[Error] No se encontró un país con el nombre: {pais_nombre}")
             opcion = obtener_simple_string(
-                label="intentar de nuevo? Y/n: ",
-                error_label="Ingrese una opcion valida",
+                label="¿Intentar de nuevo? (Y/n): ",
+                error_label="Ingrese una opción válida",
                 convert="lower",
             )
             if opcion == "n":
                 break
             continue
 
-        print(resultado)
+        print("\n[Éxito] ¡País Encontrado!")
+        imprimir_pais_bonito(resultado)
         break
 
 
 # Función que permite modificar la población o superficie de un país
-# Busca el país, lo selecciona y permite editar sus datos
 def modificar_pais(paises, nombre_archivo):
-    # Flag para controlar si se ha seleccionado un país válido
+    print("\n=== ACTUALIZAR PAÍS ===")
     es_pais = False
     while not es_pais:
         pais_nombre = obtener_simple_string(
-            label="Ingrese el nombre del pais: ",
-            error_label="Ingrese un pais valido",
+            label="Ingrese el nombre del país a modificar: ",
+            error_label="Ingrese un país válido",
         )
         resultado = next(
             (pais for pais in paises if pais_nombre.lower() in pais["nombre"].lower()),
@@ -290,25 +289,23 @@ def modificar_pais(paises, nombre_archivo):
         )
 
         if not resultado:
-            print("No se encontro un pais con el nombre: ", pais_nombre)
+            print(f"[Error] No se encontró un país con el nombre: {pais_nombre}")
             opcion = obtener_simple_string(
-                label="intentar de nuevo? Y/n: ",
-                error_label="Ingrese una opcion valida",
+                label="¿Intentar de nuevo? (Y/n): ",
+                error_label="Ingrese una opción válida",
                 convert="lower",
             )
             if opcion == "n":
                 break
             continue
 
-        print(resultado)
+        imprimir_pais_bonito(resultado)
 
-        pais_index = paises.index(
-            resultado,
-        )
+        pais_index = paises.index(resultado)
 
         opcion_pais = obtener_simple_string(
-            label=f"Usar el pais: {resultado['nombre']}? Y/n ",
-            error_label="Opcion invalida",
+            label=f"¿Modificar datos de {resultado['nombre']}? (Y/n): ",
+            error_label="Opción inválida",
             convert="lower",
             permitir_vacio=True,
         )
@@ -318,147 +315,148 @@ def modificar_pais(paises, nombre_archivo):
 
     es_editando = True
     while es_editando:
+        print("\nOpciones de edición:")
+        print("  [p] Población")
+        print("  [x] Superficie")
+        print("  [s] Salir al menú")
         opcion_editar = obtener_simple_string(
-            label="editar poblacion(p) o superficie(x) o salir(s): ",
-            error_label="Opcion invalida",
+            label="Elija una opción (p/x/s): ",
+            error_label="Opción inválida",
             convert="lower",
         )
         if opcion_editar == "p":
-
             poblacion = obtener_integer(
-                label="Ingrese la poblacion: ",
-                error_label="Ingrese un poblacion valida, igual o mayor que 0",
+                label="Ingrese la nueva población: ",
+                error_label="Ingrese una población válida, igual o mayor que 0",
             )
             paises[pais_index]["poblacion"] = poblacion
             guardar_nuevo_paises(paises, nombre_archivo)
+            print("[Éxito] Población actualizada.")
             continue
         elif opcion_editar == "x":
             superficie = obtener_integer(
-                label="Ingrese la superficie: ",
-                error_label="Ingrese un superficie valida, igual o mayor que 0",
+                label="Ingrese la nueva superficie: ",
+                error_label="Ingrese una superficie válida, igual o mayor que 0",
             )
             paises[pais_index]["superficie"] = superficie
             guardar_nuevo_paises(paises, nombre_archivo)
+            print("[Éxito] Superficie actualizada.")
             continue
         elif opcion_editar == "s":
-            print("Volviendo al menu...")
+            print("Volviendo al menú principal...")
             es_editando = False
             continue
         else:
-            print("Opcion invalida")
+            print("[Error] Opción inválida")
 
 
 # Función simple que imprime todos los países en la lista
 def mostrar_paises(paises):
+    print("\n=== LISTADO DE TODOS LOS PAÍSES ===")
     for pais in paises:
-        print(pais)
+        imprimir_pais_bonito(pais)
 
 
-# Función que filtra países según criterios: continente, población o superficie
-# Muestra los países que cumplen con el criterio especificado
+# Función que filtra países según criterios
 def filtrar_paises(paises, nombre_archivo):
-    # Solicitar al usuario el criterio de filtrado
+    print("\n=== FILTRAR PAÍSES ===")
+    print("  [c] Continente")
+    print("  [p] Población")
+    print("  [s] Superficie")
+    
     filtrar_opcion = obtener_simple_string(
-        label="Filtrar países por Continente(c), Población(p), Superficie(s): ",
+        label="Elija un criterio (c/p/s): ",
         error_label="Opción incorrecta",
         convert="lower",
     )
 
-    # Lista para almacenar los países filtrados
     paises_filtrados = []
 
     if filtrar_opcion == "c":
         continentes = {pais["continente"] for pais in paises}
-        print("Continentes disponibles:")
+        print("\nContinentes disponibles:")
         for continente in continentes:
-            print("-", continente)
+            print(f"  - {continente}")
+        
         continente = obtener_simple_string(
-            label="Ingrese el continente: ",
+            label="Ingrese el continente a filtrar: ",
             error_label="Continente inválido",
         )
-
         paises_filtrados = [
             pais for pais in paises if continente.lower() in pais["continente"].lower()
         ]
 
     elif filtrar_opcion == "p":
-        minimo = obtener_integer(
-            label="Población mínima: ",
-            error_label="Valor inválido",
-        )
-
-        maximo = obtener_integer(
-            label="Población máxima: ",
-            error_label="Valor inválido",
-        )
-
-        paises_filtrados = [
-            pais for pais in paises if minimo <= pais["poblacion"] <= maximo
-        ]
+        minimo = obtener_integer(label="Población mínima: ", error_label="Valor inválido")
+        maximo = obtener_integer(label="Población máxima: ", error_label="Valor inválido")
+        paises_filtrados = [pais for pais in paises if minimo <= pais["poblacion"] <= maximo]
 
     elif filtrar_opcion == "s":
-        minimo = obtener_integer(
-            label="Superficie mínima: ",
-            error_label="Valor inválido",
-        )
-
-        maximo = obtener_integer(
-            label="Superficie máxima: ",
-            error_label="Valor inválido",
-        )
-
-        paises_filtrados = [
-            pais for pais in paises if minimo <= pais["superficie"] <= maximo
-        ]
+        minimo = obtener_integer(label="Superficie mínima: ", error_label="Valor inválido")
+        maximo = obtener_integer(label="Superficie máxima: ", error_label="Valor inválido")
+        paises_filtrados = [pais for pais in paises if minimo <= pais["superficie"] <= maximo]
 
     else:
-        print("Opción inválida.")
+        print("[Error] Opción inválida.")
         return
 
     if len(paises_filtrados) == 0:
-        print("No se encontraron países.")
+        print("\n[Advertencia] No se encontraron países con esos criterios.")
     else:
+        print(f"\n[Info] Se encontraron {len(paises_filtrados)} países:")
         for pais in paises_filtrados:
-            print(pais)
+            imprimir_pais_bonito(pais)
 
 
-# Función que ordena la lista de países por criterio: nombre, población o superficie
-# Actualiza el archivo CSV con el nuevo orden
+# Función que ordena la lista de países por criterio
 def ordenar_paises(paises, nombre_archivo):
-    # Solicitar el criterio de ordenamiento
+    print("\n=== ORDENAR PAÍSES ===")
+    print("  [n] Nombre")
+    print("  [p] Población")
+    print("  [s] Superficie")
+    
     ordenar_opcion = obtener_simple_string(
-        label="Ordenar países por Nombre(n), Población(p), Superficie(s): ",
+        label="Elija un criterio de orden (n/p/s): ",
         error_label="Opción incorrecta",
         convert="lower",
     )
 
-    # Ordenar según la opción seleccionada
     if ordenar_opcion == "n":
         paises.sort(key=lambda pais: pais["nombre"].lower())
-
     elif ordenar_opcion == "p":
         paises.sort(key=lambda pais: pais["poblacion"])
-
     elif ordenar_opcion == "s":
-        paises.sort(key=lambda pais: pais["superficie"])
+        print("\n=== ¿Ascendente o descendente? ===")
+        print("  [A] Ascendente")
+        print("  [D] Descendente")
 
+        direccion = obtener_simple_string(
+            label="Elija una dirección (A/D): ",
+            error_label="Opción incorrecta",
+            convert="lower",
+        )
+
+        if direccion == "a":
+            paises.sort(key=lambda pais: pais["superficie"])
+        elif direccion == "d":
+            paises.sort(key=lambda pais: pais["superficie"], reverse=True)
+        else:
+            print("[Error] Opción inválida.")
     else:
-        print("Opción inválida.")
+        print("[Error] Opción inválida.")
         return
 
     guardar_nuevo_paises(paises, nombre_archivo)
-    print("Países ordenados y archivo actualizado.")
+    print("\n[Éxito] Países ordenados y archivo actualizado.")
 
 
 # Función que calcula y muestra estadísticas de los países
-# Incluye: máximo, mínimo, promedios de población, superficie y países por continente
 def mostrar_stadisticas(paises):
-    print("Calculando estadisticas...")
+    print("\n[Info] Calculando estadísticas...")
     if len(paises) < 1:
-        print("Paises insuficiente para calcular estadisticas")
+        print("[Advertencia] Países insuficientes para calcular estadísticas")
         return
 
-    # Inicializar variables para almacenar estadísticas
     pais_mayor_poblacion = paises[0]
     pais_menor_poblacion = paises[0]
     prom_poblacion = 0
@@ -492,45 +490,46 @@ def mostrar_stadisticas(paises):
     if superficie_cantidad > 0:
         prom_superficie /= superficie_cantidad
 
-    print("Pais con Mayor poblacion: ")
-    print(pais_mayor_poblacion)
-    print("---")
-
-    print("Pais con Menor poblacion: ")
-    print(pais_menor_poblacion)
-    print("---")
-
-    print("Promedio de poblacion: ")
-    print(prom_poblacion)
-    print("---")
-
-    print("Promedio de supervicion: ")
-    print(prom_superficie)
-    print("---")
-
-    print("Paises por continente: ")
+    print(f"\n┏{'━'*40}┓")
+    print(f"┃{'RESUMEN ESTADÍSTICO GLOBAL'.center(40)}┃")
+    print(f"┣{'━'*40}┫")
+    
+    print("┃  Mayor Población:")
+    print(f"┃      - {pais_mayor_poblacion['nombre']} ({pais_mayor_poblacion['poblacion']:,} hab.)")
+    print(f"┠{'─'*40}┨")
+    
+    print("┃  Menor Población:")
+    print(f"┃      - {pais_menor_poblacion['nombre']} ({pais_menor_poblacion['poblacion']:,} hab.)")
+    print(f"┠{'─'*40}┨")
+    
+    print("┃  Promedios Mundiales:")
+    print(f"┃      - Población : {prom_poblacion:,.2f} hab.")
+    print(f"┃      - Superficie: {prom_superficie:,.2f} km²")
+    print(f"┠{'─'*40}┨")
+    
+    print("┃  Países por Continente:")
     for continente, cantidad in paises_por_continente.items():
-        print(f"{continente}: {cantidad}")
-    print("---")
+        print(f"┃      - {continente.ljust(15)} : {cantidad} países")
+        
+    print(f"┗{'━'*40}┛\n")
 
 
 # Función principal que controla el flujo de la aplicación
-# Muestra el menú y ejecuta las opciones seleccionadas por el usuario
 def init():
-    # Flag para mantener activo el programa
     is_active = True
-    print("Bienvenido al sistema de gestion de paises.")
+    print(f"\n════════════════════════════════════════════")
+    print(f"{'¡BIENVENIDO AL GESTOR DE PAÍSES!'.center(44)}")
+    print(f"════════════════════════════════════════════")
     
-    # Cargar los países desde el archivo CSV
     data = get_countries_csv()
     paises = data["paises"]
     nombre_archivo = data["nombre_archivo"]
-    # Ciclo principal del programa - continúa hasta que is_active sea False
+    
     while is_active:
         print_menu()
         print_separador()
-        opcion = input("Opcion: ").strip()
-        # Ejecutar la acción según la opción seleccionada
+        opcion = input("> Ingrese su opción: ").strip()
+        
         if opcion == "1":
             agregar_pais(paises, nombre_archivo)
         elif opcion == "2":
@@ -545,26 +544,19 @@ def init():
             mostrar_stadisticas(paises)
         elif opcion == "7":
             is_active = False
-            print("saliendo del programa. Adios!")
+            print("\n¡Saliendo del programa. Que tengas un buen día!\n")
         elif opcion == "x":
-            mostrar_paises(
-                paises,
-            )
+            mostrar_paises(paises)
         else:
-            print("Opcion invalida")
-        print_separador()
+            print("[Error] Opción inválida, por favor intente de nuevo.")
 
 
 # Punto de entrada del programa
-# Se ejecuta solo si el archivo se corre directamente (no como módulo importado)
 if __name__ == "__main__":
     try:
         init()
     except KeyboardInterrupt:
-        # Captura cuando el usuario presiona Ctrl+C
-        print("\nPrograma cancelado por el usuario. Adios!")
+        print("\n\n[Cancelado] Programa cancelado por el usuario. ¡Adiós!\n")
     except Exception as e:
-        # Captura cualquier otro error inesperado
-        print(f"Ocurrió un error: {e}")
-        print("Adios!")
-    
+        print(f"\n[Error] Ocurrió un error inesperado: {e}")
+        print("¡Adiós!\n")
